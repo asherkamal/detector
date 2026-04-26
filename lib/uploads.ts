@@ -35,7 +35,17 @@ export async function readUploads(): Promise<Upload[]> {
   try {
     const raw = await fs.readFile(MANIFEST, "utf8");
     const parsed = JSON.parse(raw) as { uploads: Upload[] };
-    return parsed.uploads ?? [];
+    const uploads = parsed.uploads ?? [];
+    // Heal any records that got stuck in "analyzing" (inference already ran, status just wasn't written).
+    const healed = uploads.map((u) =>
+      u.status === "analyzing"
+        ? { ...u, status: (u.confidence >= 0.5 ? "abnormal" : "normal") as UploadStatus }
+        : u
+    );
+    if (healed.some((u, i) => u.status !== uploads[i].status)) {
+      await writeUploads(healed);
+    }
+    return healed;
   } catch {
     return [];
   }
@@ -56,7 +66,7 @@ export async function addUpload(file: File): Promise<Upload> {
   await fs.writeFile(dest, buf);
 
   const verdict = await runInference(dest);
-  const status: UploadStatus = "analyzing";
+  const status: UploadStatus = verdict.confidence >= 0.5 ? "abnormal" : "normal";
   const upload: Upload = {
     id,
     originalName: file.name,

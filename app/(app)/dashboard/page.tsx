@@ -15,8 +15,8 @@ export default async function DashboardPage() {
   const datasetClips = clips.length;
 
   const stats = [
-    { label: "Cameras Online", value: `${totalCameras}/9`, tone: "accent" as const, hint: "edge inference" },
-    { label: "Abnormal On Screen", value: "1", tone: "danger" as const, hint: "of 9 live feeds" },
+    { label: "Cameras Online", value: "N/A", tone: "muted" as const, hint: "no feeds connected" },
+    { label: "Abnormal On Screen", value: "N/A", tone: "muted" as const, hint: "no feeds connected" },
     { label: "Dataset Pool", value: String(datasetClips), tone: "muted" as const, hint: "DCSASS clips queued" },
     { label: "Uploads · indexed", value: String(uploads.length), tone: "muted" as const, hint: "lifetime classified" },
   ];
@@ -25,7 +25,7 @@ export default async function DashboardPage() {
     <>
       <Topbar
         title="Live Console"
-        subtitle="9 feeds · 8 normal + 1 abnormal · cycling DCSASS clips on loop"
+        subtitle="9 cameras · no live feeds connected"
       />
       <div className="flex-1 overflow-auto thin-scroll">
         <div className="space-y-6 p-8">
@@ -38,11 +38,11 @@ export default async function DashboardPage() {
                   Camera Grid
                 </h2>
                 <p className="text-xs text-zinc-500">
-                  9 feeds · always 8 normal and 1 abnormal · new random clip when each tile finishes
+                  No live feeds connected
                 </p>
               </div>
               <p className="text-[11px] uppercase tracking-[0.2em] text-zinc-500">
-                realtime · auto-rotating
+                no feed
               </p>
             </div>
             <LiveGrid cameras={CAMERAS} clips={clips} />

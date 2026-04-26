@@ -15,7 +15,9 @@ export type Camera = {
   lastEvent: string;
 };
 
-export const CAMERAS: Camera[] = [
+export const CAMERAS: Camera[] = [];
+
+const _CAMERAS_UNUSED: Camera[] = [
   {
     id: "CAM-01",
     label: "Aisle 4 — Cosmetics",

@@ -7,7 +7,7 @@ export default function AlertsPage() {
   const resolved = ALERTS.filter((a) => a.status === "resolved").length;
   const falsePositive = ALERTS.filter((a) => a.status === "false-positive").length;
   const calls911 = ALERTS.filter((a) => a.action === "Called 911").length;
-  const avgConf = (
+  const avgConf = total === 0 ? "—" : (
     ALERTS.reduce((a, x) => a + x.confidence, 0) / total
   ).toFixed(2);
 
@@ -44,28 +44,35 @@ export default function AlertsPage() {
               </div>
             </div>
 
-            <div className="overflow-x-auto thin-scroll">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-white/[0.02] text-[10px] uppercase tracking-[0.2em] text-zinc-500">
-                  <tr>
-                    <Th>Alert</Th>
-                    <Th>Time</Th>
-                    <Th>Camera</Th>
-                    <Th>Status</Th>
-                    <Th>Confidence</Th>
-                    <Th>Classification</Th>
-                    <Th>Action Taken</Th>
-                    <Th>Responder</Th>
-                    <Th align="right">Duration</Th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5">
-                  {ALERTS.map((a) => (
-                    <Row key={a.id} alert={a} />
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            {total === 0 ? (
+              <div className="flex flex-col items-center justify-center gap-2 px-6 py-16 text-center">
+                <p className="text-sm text-zinc-400">No alerts logged yet.</p>
+                <p className="text-xs text-zinc-600">Alerts will appear here once the live feed detects events.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto thin-scroll">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-white/[0.02] text-[10px] uppercase tracking-[0.2em] text-zinc-500">
+                    <tr>
+                      <Th>Alert</Th>
+                      <Th>Time</Th>
+                      <Th>Camera</Th>
+                      <Th>Status</Th>
+                      <Th>Confidence</Th>
+                      <Th>Classification</Th>
+                      <Th>Action Taken</Th>
+                      <Th>Responder</Th>
+                      <Th align="right">Duration</Th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {ALERTS.map((a) => (
+                      <Row key={a.id} alert={a} />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       </div>

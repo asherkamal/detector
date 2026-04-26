@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kinetic — Retail Theft Detection System
 
-## Getting Started
+Kinetic is a web-based surveillance dashboard that uses a fine-tuned [VideoMAE](https://github.com/MCG-NJU/VideoMAE) model to automatically detect shoplifting and other theft-related behavior in retail security footage.
 
-First, run the development server:
+## What it does
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Operators upload video clips through the web UI. Kinetic runs each clip through a sliding-window inference pipeline — chopping the video into 2-second segments, sampling 16 frames per segment, and passing each through VideoMAE to get a shoplifting probability. The highest probability across all segments becomes the headline confidence score. Clips that score ≥ 50% are flagged as **Abnormal**.
+
+The dashboard also has a live camera grid intended to display real-time feeds from in-store cameras, an alert log that records flagged events, and a camera management page for enrolled devices.
+
+## Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend / Backend | Next.js 16 (App Router) |
+| Styling | Tailwind CSS v4 |
+| ML inference | Python · HuggingFace Transformers · VideoMAE |
+| Video decoding | `decord` (preferred) or OpenCV |
+| Data storage | JSON flat files (`data/uploads.json`) |
+
+## Project structure
+
+```
+app/
+  (app)/
+    dashboard/     — live camera grid + recent uploads
+    uploads/       — upload & classify page
+    alerts/        — alert log
+    cameras/       — enrolled camera list
+  api/upload/      — POST endpoint that receives video files
+  actions/         — Next.js server actions (upload, finalize, delete)
+
+components/        — UI components (live grid, upload dropzone, tiles, etc.)
+lib/               — shared server utilities (uploads, cameras, alerts, auth)
+scripts/
+  infer.py         — VideoMAE inference script (segmented sliding-window)
+data/
+  uploads.json     — persisted upload records
+public/uploads/    — uploaded video files served statically
+models/            — fine-tuned checkpoint (best_videomae_shoplifting.pt)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Inference pipeline
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+`scripts/infer.py` is called once per upload as a subprocess. It:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Reads video metadata (FPS, frame count) via OpenCV
+2. Slides a **2-second window** across the clip with a **2-second stride**
+3. Samples 16 frames evenly within each window
+4. Runs a forward pass through `VideoMAEForVideoClassification` (fine-tuned, 2-class: `normal` / `shoplifting`)
+5. Reports the max-pool probability across all windows as the headline score, plus the timestamps of the peak segment
 
-## Learn More
+The checkpoint is loaded from `models/best_videomae_shoplifting.pt`. If the file is missing, inference fails and the upload is marked with an error note.
 
-To learn more about Next.js, take a look at the following resources:
+Inference runs on CPU by default. A CUDA GPU will be used automatically if available.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Getting started
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Prerequisites**
 
-## Deploy on Vercel
+- Node.js 18+
+- Python 3.9+ with `torch`, `transformers`, and either `decord` or `opencv-python` installed
+- The fine-tuned checkpoint at `models/best_videomae_shoplifting.pt`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Install and run**
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm install
+npm run dev
+```
+
+By default the inference script is invoked as `python3`. Override this with the `KINETIC_PYTHON` environment variable if your Python binary has a different name:
+
+```bash
+KINETIC_PYTHON=python npm run dev
+```
+
+## Current status
+
+- Live camera feeds are not yet connected — the grid shows placeholder tiles
+- Alert log is empty pending real feed integration
+- Upload & classify is fully functional end-to-end

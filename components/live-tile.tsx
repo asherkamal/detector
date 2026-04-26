@@ -122,7 +122,7 @@ export function LiveTile({
         )}
 
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/60 p-2 text-[11px] font-mono text-zinc-200">
-          <span className="truncate">{clip.id}</span>
+          <span className="truncate text-zinc-500">—</span>
           <Timecode />
         </div>
 
@@ -138,7 +138,7 @@ export function LiveTile({
         <div className="min-w-0">
           <p className="truncate text-sm font-medium text-white">{camera.label}</p>
           <p className="mt-0.5 truncate text-xs text-zinc-500">
-            {camera.zone} · {clip.category} · {clip.description}
+            {camera.zone}
           </p>
         </div>
       </div>
@@ -165,12 +165,11 @@ function Timecode() {
   return <span className="tabular">{t}</span>;
 }
 
-function FauxFeed({ seed: _seed, category }: { seed: number; category: string }) {
+function FauxFeed({ seed: _seed, category: _category }: { seed: number; category: string }) {
   return (
-    <div className="absolute inset-0 bg-zinc-900 flex items-center justify-center">
-      <span className="rounded bg-black/70 px-3 py-1.5 font-mono text-[11px] tracking-widest text-zinc-300 ring-1 ring-white/10">
-        DCSASS · {category.toUpperCase()}
-      </span>
+    <div className="absolute inset-0 bg-zinc-900 flex flex-col items-center justify-center gap-2">
+      <span className="font-mono text-xs tracking-widest text-zinc-600 uppercase">No Feed</span>
+      <span className="font-mono text-lg font-semibold text-zinc-500">N/A</span>
     </div>
   );
 }

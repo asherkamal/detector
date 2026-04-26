@@ -11,7 +11,7 @@ import type { Upload } from "@/lib/uploads";
 type Phase =
   | { kind: "idle" }
   | { kind: "uploading"; progress: number; name: string }
-  | { kind: "analyzing"; upload: Upload; progress: number }
+  | { kind: "analyzing"; upload: Upload | null; progress: number }
   | { kind: "done"; upload: Upload }
   | { kind: "error"; message: string };
 
@@ -49,6 +49,10 @@ export function UploadDropzone() {
         setPhase({ kind: "uploading", progress: (e.loaded / e.total) * 100, name: file.name });
       }
     };
+    // Transition to analyzing as soon as bytes are fully sent; inference runs server-side.
+    xhr.upload.onload = () => {
+      setPhase((p) => p.kind === "uploading" ? { kind: "analyzing", upload: null, progress: 0 } : p);
+    };
     xhr.onerror = () => setPhase({ kind: "error", message: "Network error during upload." });
     xhr.onload = async () => {
       if (xhr.status < 200 || xhr.status >= 300) {
@@ -63,15 +67,12 @@ export function UploadDropzone() {
           setPhase({ kind: "error", message: res.error });
           return;
         }
-        setPhase({ kind: "analyzing", upload: res.upload, progress: 0 });
-        // Simulate inference taking ~2.5s, then finalize.
-        setTimeout(async () => {
-          const finalized = await finalizeUploadAction(res.upload.id);
-          if (finalized) {
-            setPhase({ kind: "done", upload: finalized });
-            startTransition(() => router.refresh());
-          }
-        }, 2600);
+        // Inference already completed on the server; finalize status immediately.
+        const finalized = await finalizeUploadAction(res.upload.id);
+        if (finalized) {
+          setPhase({ kind: "done", upload: finalized });
+          startTransition(() => router.refresh());
+        }
       } catch {
         setPhase({ kind: "error", message: "Could not parse server response." });
       }
@@ -90,13 +91,11 @@ export function UploadDropzone() {
       return;
     }
     setPhase({ kind: "analyzing", upload: res.upload, progress: 0 });
-    setTimeout(async () => {
-      const finalized = await finalizeUploadAction(res.upload.id);
-      if (finalized) {
-        setPhase({ kind: "done", upload: finalized });
-        startTransition(() => router.refresh());
-      }
-    }, 2600);
+    const finalized = await finalizeUploadAction(res.upload.id);
+    if (finalized) {
+      setPhase({ kind: "done", upload: finalized });
+      startTransition(() => router.refresh());
+    }
   };
 
   const onDrop = (e: React.DragEvent) => {
@@ -192,7 +191,7 @@ function PhasePanel({ phase, onReset }: { phase: Phase; onReset: () => void }) {
           <div className="h-full bg-amber-400 transition-[width] duration-200" style={{ width: `${phase.progress}%` }} />
         </div>
         <p className="mt-3 font-mono text-[11px] text-zinc-500">
-          ▌ sampling 16 frames · embedding · classifying · {phase.upload.id}
+          ▌ sampling 16 frames · embedding · classifying · {phase.upload?.id ?? "…"}
         </p>
       </div>
     );
