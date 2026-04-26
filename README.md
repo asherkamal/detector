@@ -1,3 +1,5 @@
+<img width="1917" height="946" alt="image" src="https://github.com/user-attachments/assets/e68f8fe3-a803-46da-a4f2-26150ac66d27" />
+
 # Kinetic — Retail Theft Detection System
 
 Kinetic is a web-based surveillance dashboard that uses a fine-tuned [VideoMAE](https://github.com/MCG-NJU/VideoMAE) model to automatically detect shoplifting and other theft-related behavior in retail security footage.
