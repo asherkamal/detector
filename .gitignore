@@ -39,3 +39,16 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# model weights / large media (keep out of git)
+*.pt
+/public/videos/*.mp4
+/public/videos/*.mov
+/public/videos/*.avi
+/public/videos/*.mkv
+/public/inference.json
+
+# user uploads & local manifests
+/public/uploads/
+/public/dataset/
+/data/
