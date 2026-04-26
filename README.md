@@ -1,4 +1,9 @@
 <img width="1917" height="946" alt="image" src="https://github.com/user-attachments/assets/e68f8fe3-a803-46da-a4f2-26150ac66d27" />
+<img width="1918" height="947" alt="image" src="https://github.com/user-attachments/assets/db331d03-74f0-4d51-8496-7a08490a8007" />
+<img width="1917" height="945" alt="image" src="https://github.com/user-attachments/assets/f1205caf-1224-4b29-846c-2a8c2fdffe3b" />
+<img width="1916" height="947" alt="image" src="https://github.com/user-attachments/assets/54f37c7a-150a-492d-b565-676070fe2dac" />
+
+https://devpost.com/submit-to/27858-uwb-hacks-the-future/manage/submissions/1004052-kinetic/project_details/edit
 
 # Kinetic — Retail Theft Detection System
 
